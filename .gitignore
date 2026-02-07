@@ -1,0 +1,29 @@
+
+```gitignore
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+myenv/
+venv/
+.env
+
+# Database
+*.sqlite3
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
