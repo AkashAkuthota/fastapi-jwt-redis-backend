@@ -1,128 +1,253 @@
-# FastAPI Product Inventory System 🔐📦
+# 🔐 Secure Product Inventory API
 
-A backend-focused **Product Inventory & User Authentication API** built using **FastAPI**, **PostgreSQL**, and **SQLAlchemy**.  
-The project demonstrates real-world backend concepts including **JWT authentication**, **CRUD operations**, **database integration**, and **secure user management**.
-
----
-
-## 🚀 Features
-
-### 🔑 Authentication & Authorization
-- User signup with email & password
-- Secure password hashing
-- User login with JWT access token
-- Token-based authentication using OAuth2
-- Token revocation (logout support)
-- Active/inactive user handling
-
-### 📦 Product Management
-- Create, read, update, delete products
-- Full update using PUT
-- Partial update using PATCH
-- Protected routes using JWT
-- Response validation with Pydantic schemas
-
-### 🗄️ Database
-- PostgreSQL
-- SQLAlchemy ORM
-- Clean separation between:
-  - Pydantic schemas
-  - SQLAlchemy models
-  - Database session handling
+Production-Oriented FastAPI Backend with JWT, Refresh Token Rotation, Redis & RBAC
 
 ---
 
-## 🛠️ Tech Stack
+## 📌 Overview
 
-- **Backend:** FastAPI
-- **Database:** PostgreSQL
-- **ORM:** SQLAlchemy
-- **Authentication:** JWT (python-jose)
-- **Password Hashing:** passlib
-- **Validation:** Pydantic
-- **Server:** Uvicorn
+A production-style backend API built using FastAPI, PostgreSQL, and Redis.
+
+This project demonstrates real-world backend engineering concepts including:
+
+- JWT Authentication (Access + Refresh Tokens)
+- Refresh Token Rotation with Reuse Detection
+- Redis-Based Rate Limiting
+- Redis-Based Access Token Blacklisting
+- Role-Based Access Control (RBAC)
+- Background Token Cleanup Jobs
+- Secure HTTPOnly Cookie Handling
+- Multi-Session Awareness
+
+Designed to reflect practical backend architecture used in modern applications.
 
 ---
 
-## 📁 Project Structure
+## 🚀 Core Features
 
-```
+### 🔐 Authentication System
 
-fastAPI project/
+- User Signup (Email + Password)
+- Secure Password Hashing (bcrypt)
+- JWT Access Tokens
+- Refresh Tokens stored in HTTPOnly cookies
+- Refresh Token Rotation
+- Refresh Token Reuse Detection (Breach Detection)
+- Access Token Blacklisting using Redis
+
+#### Logout Behavior
+
+Logout invalidates:
+- Current Access Token (added to Redis blacklist)
+- Associated Refresh Token (revoked in DB)
+
+---
+
+### 🛡 Security Features
+
+- HTTPOnly Refresh Cookies
+- Login & Refresh Endpoint Rate Limiting
+- Redis Token Blacklist
+- Token Expiration Validation
+- Role-Based Route Protection
+- Background Cleanup of Expired Tokens
+- Secure Session Invalidation
+
+---
+
+### 👥 Role-Based Access Control (RBAC)
+
+Supported roles:
+
+- admin
+- user
+
+Protected routes use dependency guards to restrict access.
+
+---
+
+### 📦 Product Management Features
+
+- Create Product (Admin Only)
+- Get All Products (Authenticated Users)
+- Get Product by ID
+- Update Product (PUT / PATCH)
+- Delete Product
+
+All endpoints are protected via JWT authentication.
+
+---
+
+## 🗄 Tech Stack
+
+| Layer              | Technology        |
+|--------------------|------------------|
+| Framework          | FastAPI          |
+| Database           | PostgreSQL       |
+| ORM                | SQLAlchemy       |
+| Cache              | Redis            |
+| Authentication     | python-jose (JWT)|
+| Password Hashing   | passlib (bcrypt) |
+| Validation         | Pydantic         |
+| Background Jobs    | APScheduler      |
+| ASGI Server        | Uvicorn          |
+
+---
+
+## 🏗 Architecture Highlights
+
+### 🔄 Authentication Flow
+
+1. User logs in  
+   → Access Token (JWT) returned  
+   → Refresh Token stored in HTTPOnly cookie  
+
+2. Access Token used in:
+
+   Authorization: Bearer <token>
+
+3. Refresh Token stored in database.
+
+4. On Refresh:
+   - Old refresh token revoked
+   - New refresh token issued
+   - Rotation enforced
+
+5. On Logout:
+   - Access token added to Redis blacklist
+   - Refresh token revoked in database
+
+---
+
+### 🚦 Rate Limiting Strategy
+
+- Redis counters per:
+  - IP address
+  - User
+
+- TTL-based expiration
+- Protects against brute-force attacks
+- Separate limits for:
+  - Login attempts
+  - Refresh attempts
+
+---
+
+## 📂 Project Structure
+
+```bash
+fastapi-product-inventory/
 │
-├── main.py                  # API routes & application logic
-├── database.py              # DB engine & session
-├── database_models.py       # SQLAlchemy models
-├── model.py                 # Pydantic schemas
-├── auth.py                  # JWT token creation
-├── security.py              # Password hashing & verification
-├── decodingtokens.py        # get_current_user logic
+├── frontend/
+│
+├── main.py
+├── auth.py
+├── auth_context.py
+├── security.py
+├── permissions.py
+├── rate_limiter.py
+├── redis_client.py
+├── token_cleanup.py
+├── decodingtokens.py
+│
+├── database.py
+├── database_models.py
+├── model.py
+│
 ├── requirements.txt
-│
-├── frontend/                # Frontend (React) – basic integration
-│
-└── myenv/                   # Virtual environment (ignored in git)
-
-````
-
+├── README.md
+└── .gitignore
+```
 ---
 
 ## ⚙️ Setup Instructions
 
-### 1. Clone repository
-```bash
+### 1️⃣ Clone Repository
+
 git clone <your-repo-url>
-cd fastAPI-project
-````
+cd fastapi-project
 
-### 2. Create & activate virtual environment
+---
 
-```bash
+### 2️⃣ Create Virtual Environment
+
 python3 -m venv myenv
 source myenv/bin/activate
-```
 
-### 3. Install dependencies
+---
 
-```bash
+### 3️⃣ Install Dependencies
+
 pip install -r requirements.txt
-```
 
-### 4. Configure PostgreSQL
+---
 
-* Create a database
-* Update DB credentials in `database.py`
+### 4️⃣ Create .env File
 
-### 5. Run the server
+SECRET_KEY=your_secret_key  
+ALGORITHM=HS256  
+ACCESS_TOKEN_EXPIRE_MINUTES=15  
+REFRESH_TOKEN_EXPIRE_DAYS=7  
+DATABASE_URL=postgresql://username:password@localhost:5432/dbname  
+REDIS_URL=redis://localhost:6379  
 
-```bash
+---
+
+### 5️⃣ Run Redis
+
+redis-server
+
+---
+
+### 6️⃣ Run Application
+
 uvicorn main:app --reload
-```
-
-### 6. API Docs
-
-* Swagger UI: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 ---
 
-## 🔐 Authentication Flow
+### 7️⃣ Swagger Documentation
 
-1. User signs up → password is hashed & stored
-2. User logs in → JWT token is issued
-3. Token is sent in `Authorization: Bearer <token>`
-4. Protected routes validate token via `get_current_user`
-5. Logout revokes token (stored in DB)
+http://127.0.0.1:8000/docs
 
 ---
 
-## 📌 Status
+## 🔒 Production Notes
 
-* Backend core complete
-* JWT + logout implemented
-* Frontend integration basic (to be enhanced later)
+For production deployment:
+
+- Set secure=True for cookies
+- Enable HTTPS
+- Protect Redis with authentication
+- Never commit .env to GitHub
+- Use Docker + Reverse Proxy (Nginx)
+- Enable structured logging
 
 ---
 
-## 📄 License
+## 🎯 Why This Project Is Production-Oriented
 
-This project is for learning and demonstration purposes.
+This project demonstrates:
+
+- Stateless Authentication Design
+- Token Lifecycle Management
+- Secure Session Invalidation
+- Abuse Prevention via Rate Limiting
+- Scalable Architecture using Redis
+- Separation of Authentication & Authorization (RBAC)
+- Clean Modular Backend Structure
+
+This is not just a CRUD API — it reflects real backend security engineering practices.
+
+---
+
+## 📌 Project Status
+
+✅ Core Security & Session Management Complete  
+
+### 🔄 Planned Improvements
+
+- Multi-device Session Tracking
+- Audit Logging
+- Suspicious Activity Detection
+- API Versioning
+- Dockerized Deployment Setup
