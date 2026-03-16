@@ -17,7 +17,10 @@ db_url = (
     f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 )
 
-engine = create_engine(db_url)
+engine = create_engine(
+    db_url,
+    connect_args={"sslmode": "require"}
+)
 session = sessionmaker(autoflush = False,autocommit = False,bind = engine)
 
 def get_db():
