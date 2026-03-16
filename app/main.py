@@ -13,6 +13,10 @@ from app.routers.cart_router import router as cart_router
 
 import logging
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -36,6 +40,13 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown()
 
 
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+)
+
+
 app = FastAPI(
     title="Product Inventory Backend API",
     description="Secure FastAPI backend with JWT authentication, refresh token rotation, Redis blacklist, RBAC, rate limiting, and scheduled token cleanup.",
@@ -48,11 +59,17 @@ app = FastAPI(
 def root():
     return {"message": "FastAPI Product Inventory API is running"}
 
+
+
+
 # CORS configuration
-origins = [
-    "http://localhost:5173",
-    "https://your-frontend-domain.vercel.app"
-]
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "")
+
+origins = ["http://localhost:5173"]
+
+if FRONTEND_URL:
+    origins.append(FRONTEND_URL)
 
 app.add_middleware(
     CORSMiddleware,
@@ -67,9 +84,3 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(product_router)
 app.include_router(cart_router)
-
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s"
-)

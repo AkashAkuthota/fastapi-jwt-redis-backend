@@ -102,8 +102,9 @@ def login(user: UserLogin, request: Request, response: Response, db: Session = D
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=False,
-        samesite="lax",
+        secure=True,
+        samesite="None",
+        path="/",
         max_age=auth.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
     )
 
@@ -170,8 +171,9 @@ def refresh_token(request: Request, response: Response, db: Session = Depends(ge
         key="refresh_token",
         value=new_refresh_token,
         httponly=True,
-        secure=False,
-        samesite="lax",
+        secure=True,
+        samesite="None",
+        path="/",
         max_age=auth.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
     )
 
@@ -217,8 +219,10 @@ def logout(
     db.commit()
 
     response.delete_cookie(
-        key="refresh_token",
-        httponly=True
-    )
+    key="refresh_token",
+    path="/",
+    samesite="None",
+    secure=True
+)
 
     return {"message": "Logout Successfully Done"}
