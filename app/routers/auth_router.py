@@ -1,3 +1,5 @@
+from urllib import request
+
 from fastapi import APIRouter, HTTPException, Depends, status, Response, Request
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone, timedelta
@@ -13,8 +15,10 @@ from app.dependencies.decodingtokens import get_current_user
 from app.dependencies.auth_context import AuthContext
 
 from app.core.redis_client import redis_client, blacklist_token
-from app.core.rate_limiter import check_login_rate_limits, check_refresh_rate_limit
+from app.core.rate_limiter import check_refresh_rate_limit, login_rate_limiter
 
+import logging
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/auth",
@@ -52,12 +56,16 @@ def sign_up(user: UserCreate, db: Session = Depends(get_db)):
 
 # LOGIN
 @router.post("/login", status_code=status.HTTP_200_OK)
-def login(user: UserLogin, request: Request, response: Response, db: Session = Depends(get_db)):
+def login(user: UserLogin, request: Request, response: Response, db: Session = Depends(get_db), _: None = Depends(login_rate_limiter)):
 
     email = user.email.lower()
 
-    client_ip = request.client.host
-    check_login_rate_limits(client_ip, email)
+    client_ip = request.headers.get("x-forwarded-for")
+
+    if client_ip:
+        client_ip = client_ip.split(",")[0]
+    else:
+        client_ip = request.client.host
 
     db_user = db.query(database_models.User).filter(
         database_models.User.email == email
@@ -74,6 +82,8 @@ def login(user: UserLogin, request: Request, response: Response, db: Session = D
 
     redis_client.delete(f"login:ip:{client_ip}")
     redis_client.delete(f"login:email:{email}")
+
+    logger.info(f"event=login_success user_id={db_user.user_id} email={email}")
 
     access_token = auth.create_access_token(
         data={"sub": db_user.email, "user_id": db_user.user_id, "role": db_user.role}
@@ -142,7 +152,13 @@ def refresh_token(request: Request, response: Response, db: Session = Depends(ge
     if user is None or not user.is_active:
         raise HTTPException(status_code=401, detail="User invalid")
 
-    client_ip = request.client.host
+    client_ip = request.headers.get("x-forwarded-for")
+
+    if client_ip:
+        client_ip = client_ip.split(",")[0]
+    else:
+        client_ip = request.client.host
+
     user_id = db_refresh_token.user_id
 
     check_refresh_rate_limit(client_ip, user_id)
@@ -224,5 +240,7 @@ def logout(
     samesite="None",
     secure=True
 )
+    
+    logger.info(f"event=logout user_id={current_user.user.user_id} email={current_user.user.email}")
 
     return {"message": "Logout Successfully Done"}

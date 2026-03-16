@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(
         cleanup_tokens,
         "interval",
-        minutes=10
+        hours = 24
     )
 
     scheduler.start()
@@ -40,10 +40,9 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown()
 
 
-
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+    format='%(asctime)s | %(levelname)s | %(name)s | %(message)s'
 )
 
 
