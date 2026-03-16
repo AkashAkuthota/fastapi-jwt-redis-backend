@@ -6,14 +6,13 @@ const api = axios.create({
 });
 
 
+// REQUEST INTERCEPTOR
 api.interceptors.request.use((config) => {
 
   const token = localStorage.getItem("access_token");
 
   if (token) {
-
     config.headers.Authorization = `Bearer ${token}`;
-
   }
 
   return config;
@@ -21,6 +20,7 @@ api.interceptors.request.use((config) => {
 });
 
 
+// RESPONSE INTERCEPTOR
 api.interceptors.response.use(
 
   (response) => response,
@@ -40,7 +40,7 @@ api.interceptors.response.use(
       try {
 
         const res = await axios.post(
-          "http://localhost:8000/auth/refresh",
+          `${import.meta.env.VITE_API_URL}/auth/refresh`,   // FIXED (was localhost)
           {},
           { withCredentials: true }
         );
