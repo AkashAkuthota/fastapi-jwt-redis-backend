@@ -43,6 +43,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+#add root health endpoint
+@app.get("/")
+def root():
+    return {"message": "FastAPI Product Inventory API is running"}
 
 # CORS configuration
 origins = [
