@@ -19,7 +19,9 @@ db_url = (
 
 engine = create_engine(
     db_url,
-    connect_args={"sslmode": "require"}
+    connect_args={"sslmode": "require"},
+    pool_pre_ping=True,
+    pool_recycle=300
 )
 session = sessionmaker(autoflush = False,autocommit = False,bind = engine)
 
