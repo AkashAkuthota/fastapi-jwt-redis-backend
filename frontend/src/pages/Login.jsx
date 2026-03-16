@@ -12,7 +12,6 @@ function Login() {
   const [email,setEmail] = useState("");
   const [password,setPassword] = useState("");
 
-  // Redirect if already logged in
   useEffect(() => {
 
     if (token) {
@@ -20,6 +19,7 @@ function Login() {
     }
 
   }, [token, navigate]);
+
 
   const handleSubmit = async (e) => {
 
@@ -39,13 +39,19 @@ function Login() {
     } catch (err) {
 
       if (err.response?.status === 401) {
-
         toast.error("Invalid email or password");
+      }
 
-      } else {
+      else if (err.response?.status === 429) {
+        toast.error(err.response.data.detail);
+      }
 
+      else if (err.response?.status === 422) {
+        toast.error("Password must be at least 8 characters");
+      }
+
+      else {
         toast.error("Login failed. Try again.");
-
       }
 
     }
@@ -69,6 +75,7 @@ function Login() {
             placeholder="Email"
             value={email}
             onChange={(e)=>setEmail(e.target.value)}
+            required
           />
 
           <input
@@ -76,6 +83,7 @@ function Login() {
             placeholder="Password"
             value={password}
             onChange={(e)=>setPassword(e.target.value)}
+            required
           />
 
           <button type="submit">

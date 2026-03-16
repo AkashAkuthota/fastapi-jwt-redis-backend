@@ -32,7 +32,8 @@ api.interceptors.response.use(
     if (
       error.response &&
       error.response.status === 401 &&
-      !originalRequest._retry
+      !originalRequest._retry &&
+      !originalRequest.url.includes("/auth/login")
     ) {
 
       originalRequest._retry = true;
@@ -40,7 +41,7 @@ api.interceptors.response.use(
       try {
 
         const res = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh`,   // FIXED (was localhost)
+          `${import.meta.env.VITE_API_URL}/auth/refresh`,
           {},
           { withCredentials: true }
         );

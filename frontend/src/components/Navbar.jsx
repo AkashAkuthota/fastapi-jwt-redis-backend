@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-toastify";
@@ -7,9 +7,16 @@ function Navbar() {
 
   const { token, role, logout } = useContext(AuthContext);
 
-  const handleLogout = () => {
-    logout();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+
+    await logout();
+
     toast.info("Logged out");
+
+    navigate("/login");
+
   };
 
   return (
@@ -26,12 +33,10 @@ function Navbar() {
 
         <Link to="/cart">Cart</Link>
 
-        {/* Admin panel visible only to admins */}
         {role === "admin" && (
           <Link to="/admin">Admin</Link>
         )}
 
-        {/* If NOT logged in */}
         {!token && (
           <>
             <Link to="/login">Login</Link>
@@ -39,7 +44,6 @@ function Navbar() {
           </>
         )}
 
-        {/* If logged in */}
         {token && (
           <button onClick={handleLogout}>
             Logout
