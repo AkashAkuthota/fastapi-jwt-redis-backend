@@ -2,12 +2,12 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
-import auth
-import database_models
-from database import get_db
-from auth_context import AuthContext
+import app.core.auth as auth
+import app.db.database_models as database_models
+from app.db.database import get_db
+from app.dependencies.auth_context import AuthContext
 from datetime import datetime, timezone
-from redis_client import is_token_blacklisted
+from app.core.redis_client import is_token_blacklisted
 
 
 

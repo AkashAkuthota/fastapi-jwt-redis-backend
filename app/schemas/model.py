@@ -2,7 +2,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 
-#schemas to validate incoming data from client side 
+#schemas to validate incoming data from admin or staff side 
 
 class ProductResponse(BaseModel):
     id: int
@@ -51,4 +51,23 @@ class UserResponse(BaseModel):
 
 
 
+#schemas to validate incoming data from user or client side for their cart operations
 
+class CartItemCreate(BaseModel):
+    product_id: int
+    quantity: int = Field(gt=0)
+
+class CartItemUpdate(BaseModel):
+    quantity: int = Field(gt=0)
+
+class CartItemResponse(BaseModel):
+    product_id: int
+    product_name: str
+    price: float
+    quantity: int
+    total_price: float
+    in_stock: bool
+
+class CartResponse(BaseModel):
+    items: list[CartItemResponse]
+    cart_total: float

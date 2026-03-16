@@ -31,3 +31,9 @@ frontend/node_modules/
 
 # Environment variables
 .env
+myenv
+
+#for redisdump.rdb
+dump.rdb
+
+```

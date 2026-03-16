@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from database_models import User
+from app.db.database_models import User
 from datetime import datetime
 
 @dataclass

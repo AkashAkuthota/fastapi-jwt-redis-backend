@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, UniqueConstraint
+from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -24,6 +25,27 @@ class User(Base):
     hashed_password = Column(String, nullable = False)
     role = Column(String, default="user")
     is_active = Column(Boolean, default=True)
+
+
+class CartItem(Base):
+
+    __tablename__ = "cart_items"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+
+    user_id = Column(Integer, ForeignKey("user.user_id", ondelete="CASCADE"), nullable=False, index=True)
+
+    product_id = Column(Integer, ForeignKey("product.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    quantity = Column(Integer, nullable=False)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "product_id", name="unique_user_product_cart"),
+    )
+
+
 
 class RevokedToken(Base):
 

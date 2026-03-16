@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
-import database_models
-from database import session
+import app.db.database_models as database_models
+from app.db.database import session
 
 
 
@@ -19,7 +19,7 @@ def cleanup_tokens():
         database_models.Refresh_Tokens.revoked_at < old_token).delete(synchronize_session=False)
     
         db.commit()
-        print(f"Cleanup finished at {now}")
+        
     except Exception as e:
         print(f"cleanup failed:{e}")
         db.rollback()

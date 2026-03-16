@@ -8,17 +8,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 REDIS_HOST = os.getenv("REDIS_HOST")
-REDIS_PORT  = int(os.getenv("REDIS_PORT"))
-REDIS_DB = int(os.getenv("REDIS_DB"))
+REDIS_PORT = os.getenv("REDIS_PORT")
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 
-redis_pool = redis.ConnectionPool(
-    host = REDIS_HOST,
-    port = REDIS_PORT,
-    db = REDIS_DB,
-    decode_responses = True
+REDIS_URL = f"rediss://default:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}"
+
+redis_client = redis.from_url(
+    REDIS_URL,
+    decode_responses=True
 )
-
-redis_client = redis.Redis(connection_pool=redis_pool)
 
 def hashing_token(token: str):
     return hashlib.sha256(token.encode()).hexdigest()

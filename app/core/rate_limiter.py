@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from redis_client import redis_client
+from app.core.redis_client import redis_client
 
 Login_attempts = 5
 Login_window = 60

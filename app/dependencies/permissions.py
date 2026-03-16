@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status
-from decodingtokens import get_current_user, AuthContext
+from app.dependencies.decodingtokens import get_current_user, AuthContext
 
 def require_role(*roles: str):
 
